@@ -22,7 +22,7 @@ opt.undofile = true
 -- search settings
 opt.ignorecase = true
 opt.smartcase = true
-opt.hlsearch = false
+opt.hlsearch = true
 opt.incsearch = true
 
 -- appearance

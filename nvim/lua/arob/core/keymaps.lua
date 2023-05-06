@@ -30,14 +30,14 @@ keymap.set("n", "<leader>tp", ":tabp<CR>") --  go to previous tab
 -- Primagen -----!!!
 keymap.set("n", "<leader>pv", vim.cmd.Ex) -- return to netrw file navigation
 
-keymap.set("v", "E", ":m '>+1<CR>gv=gv") -- move higlighted lines up
-keymap.set("v", "I", ":m '<-2<CR>gv=gv") -- move highlighted lines down
+keymap.set("v", "<S-Up>", ":m '<-2<CR>gv=gv") -- move highlighted lines down
+keymap.set("v", "<S-Down>", ":m '>+1<CR>gv=gv") -- move higlighted lines up
 
 keymap.set("n", "E", "mzJ`z") -- bring next line onto this one
 keymap.set("n", "<C-d>", "<C-d>zz") -- move half page down
 keymap.set("n", "<C-u>", "<C-u>zz") -- move halp page up
 keymap.set("n", "n", "nzzzv") -- navigate to the next occurence
-keymap.set("n", "N", "Nzzzv") -- navigate to the next occurence ??
+keymap.set("n", "N", "Nzzzv") -- navigate to the previous occurence
 
 -- greatest remap ever
 keymap.set("x", "<leader>p", '"_dP')
@@ -56,10 +56,10 @@ keymap.set("n", "<leader>f", function() -- format code
 	vim.lsp.buf.format()
 end)
 
-keymap.set("n", "<C-e>", "<cmd>cnext<CR>zz")
-keymap.set("n", "<C-i>", "<cmd>cprev<CR>zz")
-keymap.set("n", "<leader>e", "<cmd>lnext<CR>zz")
-keymap.set("n", "<leader>i", "<cmd>lprev<CR>zz")
+keymap.set("n", "<C-i>", "<cmd>cnext<CR>zz")
+keymap.set("n", "<C-o>", "<cmd>cprev<CR>zz")
+keymap.set("n", "<leader>i", "<cmd>lnext<CR>zz")
+keymap.set("n", "<leader>o", "<cmd>lprev<CR>zz")
 
 keymap.set("n", "<leader>s", ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/gI<Left><Left><Left>")
 keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
@@ -72,7 +72,7 @@ keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 keymap.set("n", "<leader>m", ":MaximizerToggle<CR>")
 
 -- nvim-tree
-keymap.set("n", "<leader>t", ":NvimTreeToggle<CR>")
+keymap.set("n", "<leader>w", ":NvimTreeToggle<CR>")
 
 -- vim-tmux-navigator remaps for colemak-dhm
 keymap.set("n", "<C-Left>", [[<Cmd>wincmd h<CR>]])

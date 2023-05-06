@@ -37,10 +37,11 @@ nvimtree.setup({
 	view = {
 		preserve_window_proportions = true,
 	},
-    update_cwd = true,
-	-- 	git = {
-	-- 		ignore = false,
-	-- 	},
+	update_cwd = true,
+	sync_root_with_cwd = true,
+	--git = {
+	--	ignore = false,
+	--},
 })
 
 -- open nvim-tree on setup

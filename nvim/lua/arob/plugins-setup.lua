@@ -73,21 +73,18 @@ return packer.startup(function(use)
 		config = function()
 			require("toggleterm").setup()
 		end,
-    })
+	})
 
-    -- file explorer
-    use {
-        'nvim-tree/nvim-tree.lua',
-        requires = {
-            'nvim-tree/nvim-web-devicons', -- optional
-        },
-        config = function()
-            require("nvim-tree").setup {}
-        end
-    }
-
-	-- statusline
-	-- use("nvim-lualine/lualine.nvim")
+	-- file explorer
+	use({
+		"nvim-tree/nvim-tree.lua",
+		requires = {
+			"nvim-tree/nvim-web-devicons", -- optional
+		},
+		config = function()
+			require("nvim-tree").setup({})
+		end,
+	})
 
 	-- fuzzy finding w/ telescope
 	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" }) -- dependency for better sorting performance
@@ -107,14 +104,14 @@ return packer.startup(function(use)
 		end,
 	})
 
-    -- -- treesitter configuration
-    use({
-        "nvim-treesitter/nvim-treesitter",
-        run = function()
-            local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
-            ts_update()
-        end,
-    })
+	-- -- treesitter configuration
+	use({
+		"nvim-treesitter/nvim-treesitter",
+		run = function()
+			local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
+			ts_update()
+		end,
+	})
 	use("nvim-treesitter/playground")
 
 	-- autocompletion
@@ -131,23 +128,23 @@ return packer.startup(function(use)
 	use("williamboman/mason.nvim")
 	use("williamboman/mason-lspconfig.nvim")
 
-    -- configuring lsp servers
-    use("neovim/nvim-lspconfig")
-    use("hrsh7th/cmp-nvim-lsp")
-    use({
-        "glepnir/lspsaga.nvim",
-        branch = "main",
-        requires = {
-            { "nvim-tree/nvim-web-devicons" },
-            { "nvim-treesitter/nvim-treesitter" },
-        },
-    }) -- enhanced lsp uis
+	-- configuring lsp servers
+	use("neovim/nvim-lspconfig")
+	use("hrsh7th/cmp-nvim-lsp")
+	use({
+		"glepnir/lspsaga.nvim",
+		branch = "main",
+		requires = {
+			{ "nvim-tree/nvim-web-devicons" },
+			{ "nvim-treesitter/nvim-treesitter" },
+		},
+	}) -- enhanced lsp uis
 	use("jose-elias-alvarez/typescript.nvim")
 	use("onsails/lspkind.nvim")
 
-    -- formatting & linting
-    use("jose-elias-alvarez/null-ls.nvim")
-    use("jayp0521/mason-null-ls.nvim") 
+	-- formatting & linting
+	use("jose-elias-alvarez/null-ls.nvim")
+	use("jayp0521/mason-null-ls.nvim")
 
 	-- auto closing
 	use("windwp/nvim-autopairs")
@@ -155,6 +152,31 @@ return packer.startup(function(use)
 
 	-- git signs plugin
 	use("lewis6991/gitsigns.nvim")
+
+	-- diffview
+	use({ "sindrets/diffview.nvim", requires = "nvim-lua/plenary.nvim" })
+
+	-- minimap
+	use("wfxr/minimap.vim")
+
+	-- git blame
+	use("f-person/git-blame.nvim")
+
+	-- indent blankline
+	use("lukas-reineke/indent-blankline.nvim")
+
+	-- statusline
+	use("feline-nvim/feline.nvim")
+
+	-- rust crate managing
+	-- use {
+	-- 'saecki/crates.nvim',
+	-- tag = 'v0.3.0',
+	-- requires = { 'nvim-lua/plenary.nvim' },
+	-- config = function()
+	--     require('crates').setup()
+	-- end,
+	-- }
 
 	if packer_bootstrap then
 		require("packer").sync()
