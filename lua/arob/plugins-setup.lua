@@ -127,7 +127,10 @@ return packer.startup(function(use)
 		end,
 	})
 	-- enhanced lsp uis
-	use("pmizio/typescript-tools.nvim")
+	use({
+		"pmizio/typescript-tools.nvim",
+		requires = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+	})
 	use("onsails/lspkind.nvim")
 
 	-- formatting & linting
