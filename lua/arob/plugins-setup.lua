@@ -159,6 +159,7 @@ return packer.startup(function(use)
 
 	-- statusline
 	use("feline-nvim/feline.nvim")
+	use("rebelot/heirline.nvim")
 
 	if packer_bootstrap then
 		require("packer").sync()
