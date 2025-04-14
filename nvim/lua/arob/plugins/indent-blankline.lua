@@ -1,18 +1,32 @@
--- Set list mode to show special characters like tabs and trailing spaces
 vim.opt.list = true
 
--- Define custom highlights for indent lines
-vim.api.nvim_set_hl(0, "IndentBlanklineIndent1", { fg = "#2A273D", nocombine = true })
-vim.api.nvim_set_hl(0, "IndentBlanklineIndent2", { fg = "#534D80", nocombine = true })
+-- Define custom highlights for indent lines and context
+vim.cmd([[highlight IndentBlanklineIndent1 guifg=#2A273D gui=nocombine]])
+vim.cmd([[highlight IndentBlanklineContextChar guifg=#534D80 gui=nocombine]])
 
--- Set up the `ibl` plugin with custom configurations
 require("ibl").setup({
 	indent = {
-		char = "▏", -- or any other character you want to use
-		highlight = { "IndentBlanklineIndent1" },
+		char = "│", -- Character for indent lines (optional, matches default)
+		highlight = { "IndentBlanklineIndent1" }, -- Highlight for indent lines
 	},
 	scope = {
-		enabled = true, -- Enables scope highlighting
-		highlight = "IndentBlanklineIndent2", -- Uses the same highlight group for scope
+		enabled = true, -- Show current context (replaces show_current_context)
+		show_start = false, -- Don’t show context start line (matches show_current_context_start = false)
+		highlight = { "IndentBlanklineContextChar" }, -- Highlight for context
+	},
+	exclude = {
+		filetypes = {
+			"help",
+			"terminal",
+			"lazy",
+			"lspinfo",
+			"TelescopePrompt",
+			"TelescopeResults",
+			"mason",
+			"nvdash",
+			"nvcheatsheet",
+			"",
+		},
+		buftypes = { "terminal" },
 	},
 })

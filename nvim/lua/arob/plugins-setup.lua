@@ -69,7 +69,6 @@ return packer.startup(function(use)
 	-- Toggle Terminal
 	use({
 		"akinsho/toggleterm.nvim",
-		tag = "*",
 		config = function()
 			require("toggleterm").setup()
 		end,
@@ -90,18 +89,7 @@ return packer.startup(function(use)
 	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" }) -- dependency for better sorting performance
 	use({
 		"nvim-telescope/telescope.nvim",
-		tag = "0.1.1",
-		-- or                            , branch = '0.1.x',
 		requires = { { "nvim-lua/plenary.nvim" } },
-	})
-
-	-- Toggle Terminal
-	use({
-		"akinsho/toggleterm.nvim",
-		tag = "*",
-		config = function()
-			require("toggleterm").setup()
-		end,
 	})
 
 	-- -- treesitter configuration
@@ -139,7 +127,7 @@ return packer.startup(function(use)
 		end,
 	})
 	-- enhanced lsp uis
-	use("jose-elias-alvarez/typescript.nvim")
+	use("pmizio/typescript-tools.nvim")
 	use("onsails/lspkind.nvim")
 
 	-- formatting & linting
@@ -163,20 +151,15 @@ return packer.startup(function(use)
 	use("f-person/git-blame.nvim")
 
 	-- indent blankline
-	use("lukas-reineke/indent-blankline.nvim")
+	use({
+		"lukas-reineke/indent-blankline.nvim",
+		main = "ibl",
+		opts = {},
+	})
 
 	-- statusline
 	use("feline-nvim/feline.nvim")
-
-	-- rust crate managing
-	-- use {
-	-- 'saecki/crates.nvim',
-	-- tag = 'v0.3.0',
-	-- requires = { 'nvim-lua/plenary.nvim' },
-	-- config = function()
-	--     require('crates').setup()
-	-- end,
-	-- }
+	use("rebelot/heirline.nvim")
 
 	if packer_bootstrap then
 		require("packer").sync()
