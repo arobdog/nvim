@@ -11,10 +11,28 @@ local diagnostics = null_ls.builtins.diagnostics
 -- To setup format on save
 local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
 
+-- Define the path to the Neovim-specific .prettierrc
+local nvim_prettier_config = vim.fn.stdpath("config") .. "/.prettierrc"
+
+-- Function to check if a local Prettier config exists in the project
+local function has_local_prettier_config(utils)
+	return utils.root_has_file({
+		".prettierrc",
+		".prettierrc.json",
+		".prettierrc.js",
+		".prettierrc.yaml",
+		".prettierrc.yml",
+		".prettierrc.toml",
+		"prettier.config.js",
+		"prettier.config.cjs",
+		"package.json", -- Assumes it may contain a "prettier" field
+	})
+end
+
 -- Configure null-ls
 null_ls.setup({
 	sources = {
-		-- Prettier for JS/TS, HTML, CSS, etc., with Tailwind CSS support
+		-- Prettier for JS/TS, HTML, CSS, etc., with plugin support
 		formatting.prettier.with({
 			filetypes = {
 				"javascript",
@@ -30,16 +48,24 @@ null_ls.setup({
 				"markdown",
 				"markdown.mdx",
 			},
-			extra_args = {
-				-- Ensure prettier-plugin-tailwindcss is used if installed
-				"--plugin-search-dir=.",
-			},
+			extra_args = function(params)
+				-- Always include plugin search directory for local plugins
+				local args = { "--plugin-search-dir=." }
+
+				-- Only use Neovim's .prettierrc if no local config exists and it’s readable
+				if not has_local_prettier_config(params) and vim.fn.filereadable(nvim_prettier_config) == 1 then
+					table.insert(args, "--config")
+					table.insert(args, nvim_prettier_config)
+				end
+
+				return args
+			end,
 		}),
 		-- Black for Python
 		formatting.black,
 		-- Stylua for Lua
 		formatting.stylua,
-		-- ESLint for diagnostics, with refined conditions
+		-- ESLint for diagnostics
 		diagnostics.eslint_d.with({
 			filetypes = {
 				"javascript",
