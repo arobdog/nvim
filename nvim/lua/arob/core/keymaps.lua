@@ -6,6 +6,9 @@ vim.g.mapleader = " "
 -- General Keymaps
 ---------------------
 
+-- redo to shift u
+keymap.set("n", "<S-u>", "<C-r>")
+
 -- clear search highlights
 keymap.set("n", "<leader>nh", ":nohl<CR>")
 

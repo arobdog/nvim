@@ -1,31 +1,37 @@
 local line_ok, feline = pcall(require, "feline")
+
 if not line_ok then
 	return
 end
 
-local one_monokai = {
-	fg = "#abb2bf",
-	bg = "#1e2024",
-	green = "#98c379",
-	yellow = "#e5c07b",
-	purple = "#c678dd",
-	orange = "#d19a66",
-	peanut = "#f6d5a4",
-	red = "#e06c75",
-	aqua = "#61afef",
-	darkblue = "#282c34",
-	dark_red = "#f75f5f",
+local rose_pine = {
+	bg = "#191724",
+	fg = "#908caa",
+	nc = "#16141f",
+	base = "#191724",
+	surface = "#1f1d2e",
+	overlay = "#26233a",
+	muted = "#6e6a86",
+	subtle = "#908caa",
+	text = "#e0def4",
+	love = "#eb6f92",
+	gold = "#f6c177",
+	rose = "#ebbcba",
+	pine = "#31748f",
+	foam = "#9ccfd8",
+	iris = "#c4a7e7",
 }
 
 local vi_mode_colors = {
-	NORMAL = "green",
-	OP = "green",
-	INSERT = "yellow",
-	VISUAL = "purple",
-	LINES = "orange",
-	BLOCK = "dark_red",
-	REPLACE = "red",
-	COMMAND = "aqua",
+	NORMAL = rose_pine.iris,
+	OP = rose_pine.iris,
+	INSERT = rose_pine.foam,
+	VISUAL = rose_pine.love,
+	LINES = rose_pine.gold,
+	BLOCK = rose_pine.love,
+	REPLACE = rose_pine.foam,
+	COMMAND = rose_pine.gold,
+	TERM = rose_pine.pine,
 }
 
 local c = {
@@ -40,7 +46,7 @@ local c = {
 		hl = function()
 			return {
 				fg = require("feline.providers.vi_mode").get_mode_color(),
-				bg = "darkblue",
+				bg = "bg",
 				style = "bold",
 				name = "NeovimModeHLColor",
 			}
@@ -51,82 +57,40 @@ local c = {
 	gitBranch = {
 		provider = "git_branch",
 		hl = {
-			fg = "peanut",
-			bg = "darkblue",
+			fg = "pine",
+			bg = "bg",
 			style = "bold",
 		},
 		left_sep = "block",
 		right_sep = "block",
-	},
-	gitDiffAdded = {
-		provider = "git_diff_added",
-		hl = {
-			fg = "green",
-			bg = "darkblue",
-		},
-		left_sep = "block",
-		right_sep = "block",
-	},
-	gitDiffRemoved = {
-		provider = "git_diff_removed",
-		hl = {
-			fg = "red",
-			bg = "darkblue",
-		},
-		left_sep = "block",
-		right_sep = "block",
-	},
-	gitDiffChanged = {
-		provider = "git_diff_changed",
-		hl = {
-			fg = "fg",
-			bg = "darkblue",
-		},
-		left_sep = "block",
-		right_sep = "right_filled",
-	},
-	separator = {
-		provider = "",
 	},
 	fileinfo = {
 		provider = {
 			name = "file_info",
 			opts = {
-				type = "relative-short",
+				type = "relative",
+			},
+		},
+		short_provider = {
+			name = "file_info",
+			opts = {
+				type = "short-path",
 			},
 		},
 		hl = {
-			style = "bold",
+			style = "NONE",
 		},
 		left_sep = " ",
 		right_sep = " ",
 	},
-	diagnostic_errors = {
-		provider = "diagnostic_errors",
-		hl = {
-			fg = "red",
-		},
-	},
-	diagnostic_warnings = {
-		provider = "diagnostic_warnings",
-		hl = {
-			fg = "yellow",
-		},
-	},
-	diagnostic_hints = {
-		provider = "diagnostic_hints",
-		hl = {
-			fg = "aqua",
-		},
-	},
-	diagnostic_info = {
-		provider = "diagnostic_info",
+	separator = {
+		provider = "",
 	},
 	lsp_client_names = {
 		provider = "lsp_client_names",
 		hl = {
-			fg = "purple",
-			bg = "darkblue",
+			fg = "fg",
+			bg = "bg",
 			style = "bold",
 		},
 		left_sep = "left_filled",
@@ -141,8 +105,8 @@ local c = {
 			},
 		},
 		hl = {
-			fg = "red",
-			bg = "darkblue",
+			fg = "fg",
+			bg = "bg",
 			style = "bold",
 		},
 		left_sep = "block",
@@ -151,8 +115,8 @@ local c = {
 	file_encoding = {
 		provider = "file_encoding",
 		hl = {
-			fg = "orange",
-			bg = "darkblue",
+			fg = "fg",
+			bg = "bg",
 			style = "italic",
 		},
 		left_sep = "block",
@@ -161,9 +125,9 @@ local c = {
 	position = {
 		provider = "position",
 		hl = {
-			fg = "green",
-			bg = "darkblue",
-			style = "bold",
+			fg = "fg",
+			bg = "bg",
+			style = "NONE",
 		},
 		left_sep = "block",
 		right_sep = "block",
@@ -171,46 +135,28 @@ local c = {
 	line_percentage = {
 		provider = "line_percentage",
 		hl = {
-			fg = "aqua",
-			bg = "darkblue",
+			fg = "fg",
+			bg = "bg",
 			style = "bold",
 		},
 		left_sep = "block",
 		right_sep = "block",
-	},
-	scroll_bar = {
-		provider = "scroll_bar",
-		hl = {
-			fg = "yellow",
-			style = "bold",
-		},
 	},
 }
 
 local left = {
 	c.vim_mode,
 	c.gitBranch,
-	c.gitDiffAdded,
-	c.gitDiffRemoved,
-	c.gitDiffChanged,
+	c.fileinfo,
 	c.separator,
 }
 
-local middle = {
-	c.fileinfo,
-	c.diagnostic_errors,
-	c.diagnostic_warnings,
-	c.diagnostic_info,
-	c.diagnostic_hints,
-}
+local middle = {}
 
 local right = {
-	c.lsp_client_names,
 	c.file_type,
-	c.file_encoding,
 	c.position,
 	c.line_percentage,
-	c.scroll_bar,
 }
 
 local components = {
@@ -228,6 +174,6 @@ local components = {
 
 feline.setup({
 	components = components,
-	theme = one_monokai,
+	theme = rose_pine,
 	vi_mode_colors = vi_mode_colors,
 })

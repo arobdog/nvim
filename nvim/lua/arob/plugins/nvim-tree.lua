@@ -22,7 +22,23 @@ nvimtree.setup({
 					arrow_open = "", -- arrow when folder is open
 				},
 			},
+			show = {
+				git = true,
+			},
 		},
+		highlight_git = true,
+	},
+	sort = {
+		sorter = "case_sensitive",
+	},
+	git = {
+		enable = true,
+		show_on_dirs = true,
+		show_on_open_dirs = true,
+	},
+	filters = {
+		git_ignored = false,
+		dotfiles = false,
 	},
 	-- disable window_picker for
 	-- explorer to work well with
@@ -39,9 +55,6 @@ nvimtree.setup({
 	},
 	update_cwd = true,
 	sync_root_with_cwd = true,
-	--git = {
-	--	ignore = false,
-	--},
 })
 
 -- open nvim-tree on setup
