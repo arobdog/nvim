@@ -55,7 +55,7 @@ nvimtree.setup({
 		},
 	},
 	view = {
-		width = 20, -- Set the sidebar width
+		width = 25, -- Set the sidebar width
 		preserve_window_proportions = true,
 	},
 	update_cwd = true,
