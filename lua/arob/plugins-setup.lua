@@ -1,170 +1,113 @@
--- auto install packer if not installed
-local ensure_packer = function()
-	local fn = vim.fn
-	local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
-	if fn.empty(fn.glob(install_path)) > 0 then
-		fn.system({ "git", "clone", "--depth", "1", "https://github.com/wbthomason/packer.nvim", install_path })
-		vim.cmd([[packadd packer.nvim]])
-		return true
-	end
-	return false
+-- Lazy.nvim installation
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
 end
-local packer_bootstrap = ensure_packer() -- true if packer was just installed
+vim.opt.rtp:prepend(lazypath)
 
--- autocommand that reloads neovim and installs/updates/removes plugins
--- when file is saved
-vim.cmd([[
-  augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost plugins-setup.lua source <afile> | PackerSync
-  augroup end
-]])
+-- Plugin list for Lazy.nvim
+local plugins = {
+  -- Lua functions that many plugins use
+  { "nvim-lua/plenary.nvim" },
 
--- import packer safely
-local status, packer = pcall(require, "packer")
-if not status then
-	return
-end
+  -- Colour Schemes
+  { "rose-pine/neovim", name = "rose-pine" },
+  { "EdenEast/nightfox.nvim" },
+  { "rebelot/kanagawa.nvim" },
 
--- add list of plugins to install
-return packer.startup(function(use)
-	-- Packer can manage itself
-	use("wbthomason/packer.nvim")
+  -- Swap between files fast
+  { "theprimeagen/harpoon", config = function() require("arob.plugins.harpoon") end },
 
-	-- lua funcitons that many plugins use
-	use("nvim-lua/plenary.nvim")
+  -- Practice Nvim with Games
+  { "theprimeagen/vim-be-good" },
 
-	-- Colour Schemes
-	use({ "rose-pine/neovim", as = "rose-pine" })
-	use("EdenEast/nightfox.nvim")
-	use("rebelot/kanagawa.nvim")
+  -- Undo history tree
+  { "mbbill/undotree", config = function() require("arob.plugins.undotree") end },
 
-	vim.cmd("colorscheme rose-pine")
-	--vim.cmd("colorscheme nightfox")
-	--vim.cmd("colorscheme kanagawa")
+  -- Git integration
+  { "tpope/vim-fugitive", config = function() require("arob.plugins.fugitive") end },
 
-	-- Swap between files fast
-	use("theprimeagen/harpoon")
+  -- Tmux & split window navigation
+  { "christoomey/vim-tmux-navigator" },
 
-	-- Practice Nvim with Games
-	use("theprimeagen/vim-be-good")
+  -- Maximizes and restores current window
+  { "szw/vim-maximizer" },
 
-	-- undo history tree
-	use("mbbill/undotree")
-	use("tpope/vim-fugitive")
+  -- Essential plugins
+  { "tpope/vim-surround" },
+  { "vim-scripts/ReplaceWithRegister" },
 
-	-- tmux & split window navigation
-	use("christoomey/vim-tmux-navigator")
+  -- Commenting with gc
+  { "numToStr/Comment.nvim", config = function() require("arob.plugins.comment") end },
 
-	--maximizes and restores current window
-	use("szw/vim-maximizer")
+  -- Toggle Terminal
+  { "akinsho/toggleterm.nvim", config = function() require("arob.plugins.toggleterm") end },
 
-	-- essential plugins
-	use("tpope/vim-surround")
-	use("vim-scripts/ReplaceWithRegister")
+  -- File explorer
+  { "nvim-tree/nvim-tree.lua", dependencies = { "nvim-tree/nvim-web-devicons" }, config = function() require("arob.plugins.nvim-tree") end },
 
-	-- commenting with gc
-	use("numToStr/Comment.nvim")
+  -- Fuzzy finding w/ Telescope
+  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+  { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope-fzf-native.nvim" }, config = function() require("arob.plugins.telescope") end },
 
-	-- Toggle Terminal
-	use({
-		"akinsho/toggleterm.nvim",
-		config = function()
-			require("toggleterm").setup()
-		end,
-	})
+  -- Treesitter configuration
+  { "nvim-treesitter/nvim-treesitter", build = function() pcall(require("nvim-treesitter.install").update({ with_sync = true })) end, config = function() require("arob.plugins.treesitter") end },
+  { "nvim-treesitter/playground" },
 
-	-- file explorer
-	use({
-		"nvim-tree/nvim-tree.lua",
-		requires = {
-			"nvim-tree/nvim-web-devicons", -- optional
-		},
-		config = function()
-			require("nvim-tree").setup({})
-		end,
-	})
+  -- Autocompletion
+  { "hrsh7th/nvim-cmp", config = function() require("arob.plugins.nvim-cmp") end },
+  { "hrsh7th/cmp-buffer" },
+  { "hrsh7th/cmp-path" },
 
-	-- fuzzy finding w/ telescope
-	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" }) -- dependency for better sorting performance
-	use({
-		"nvim-telescope/telescope.nvim",
-		requires = { { "nvim-lua/plenary.nvim" } },
-	})
+  -- Snippets
+  { "L3MON4D3/LuaSnip" },
+  { "saadparwaiz1/cmp_luasnip" },
+  { "rafamadriz/friendly-snippets" },
 
-	-- -- treesitter configuration
-	use({
-		"nvim-treesitter/nvim-treesitter",
-		run = function()
-			local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
-			ts_update()
-		end,
-	})
-	use("nvim-treesitter/playground")
+  -- Managing & installing LSP servers, linters & formatters
+  { "williamboman/mason.nvim", config = function() require("arob.plugins.lsp.mason") end },
+  { "williamboman/mason-lspconfig.nvim" },
 
-	-- autocompletion
-	use("hrsh7th/nvim-cmp")
-	use("hrsh7th/cmp-buffer")
-	use("hrsh7th/cmp-path")
+  -- Configuring LSP servers
+  { "neovim/nvim-lspconfig", config = function() require("arob.plugins.lsp.lspconfig") end },
+  { "hrsh7th/cmp-nvim-lsp" },
+  { "nvimdev/lspsaga.nvim", dependencies = { "neovim/nvim-lspconfig" }, config = function() require("arob.plugins.lsp.lspsaga") end },
 
-	-- snippets
-	use("L3MON4D3/LuaSnip")
-	use("saadparwaiz1/cmp_luasnip")
-	use("rafamadriz/friendly-snippets")
+  -- Enhanced LSP UIs
+  { "pmizio/typescript-tools.nvim", dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" } },
+  { "onsails/lspkind.nvim" },
 
-	-- managing & installing lsp servers, linters & formatters
-	use("williamboman/mason.nvim")
-	use("williamboman/mason-lspconfig.nvim")
+  -- Formatting & linting
+  { "nvimtools/none-ls.nvim", dependencies = { "nvim-lua/plenary.nvim", "nvimtools/none-ls-extras.nvim"}, config = function() require("arob.plugins.lsp.null-ls") end },
+  { "jayp0521/mason-null-ls.nvim" },
 
-	-- configuring lsp servers
-	use("neovim/nvim-lspconfig")
-	use("hrsh7th/cmp-nvim-lsp")
-	use({
-		"nvimdev/lspsaga.nvim",
-		after = "nvim-lspconfig",
-		config = function()
-			require("lspsaga").setup({})
-		end,
-	})
-	-- enhanced lsp uis
-	use({
-		"pmizio/typescript-tools.nvim",
-		requires = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-	})
-	use("onsails/lspkind.nvim")
+  -- Auto closing
+  { "windwp/nvim-autopairs", config = function() require("arob.plugins.autopairs") end },
+  { "windwp/nvim-ts-autotag" },
 
-	-- formatting & linting
-	use("nvimtools/none-ls.nvim")
-	use("jayp0521/mason-null-ls.nvim")
+  -- Git signs plugin
+  { "lewis6991/gitsigns.nvim", config = function() require("arob.plugins.gitsigns") end },
 
-	-- auto closing
-	use("windwp/nvim-autopairs")
-	use("windwp/nvim-ts-autotag")
+  -- Diffview
+  { "sindrets/diffview.nvim", dependencies = { "nvim-lua/plenary.nvim" }, config = function() require("arob.plugins.diffview") end },
 
-	-- git signs plugin
-	use("lewis6991/gitsigns.nvim")
+  -- Git blame
+  { "f-person/git-blame.nvim", config = function() require("arob.plugins.gitblame") end },
 
-	-- diffview
-	use({ "sindrets/diffview.nvim", requires = "nvim-lua/plenary.nvim" })
+  -- Indent blankline
+  { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {}, config = function() require("arob.plugins.indent-blankline") end },
 
-	-- minimap
-	use("wfxr/minimap.vim")
+  -- Statusline
+  --{ "feline-nvim/feline.nvim", config = function() require("arob.plugins.feline") end },
+  { "rebelot/heirline.nvim", config = function() require("arob.plugins.heirline") end },
+}
 
-	-- git blame
-	use("f-person/git-blame.nvim")
-
-	-- indent blankline
-	use({
-		"lukas-reineke/indent-blankline.nvim",
-		main = "ibl",
-		opts = {},
-	})
-
-	-- statusline
-	use("feline-nvim/feline.nvim")
-	use("rebelot/heirline.nvim")
-
-	if packer_bootstrap then
-		require("packer").sync()
-	end
-end)
+-- Setup Lazy.nvim with the plugin list
+require("lazy").setup(plugins)

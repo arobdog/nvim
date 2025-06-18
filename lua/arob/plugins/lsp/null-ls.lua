@@ -6,7 +6,7 @@ end
 
 -- For conciseness
 local formatting = null_ls.builtins.formatting
-local diagnostics = null_ls.builtins.diagnostics
+local eslint_d = require("none-ls.diagnostics.eslint_d")  -- Updated to require from none-ls-extras
 
 -- To setup format on save
 local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
@@ -66,7 +66,7 @@ null_ls.setup({
 		-- Stylua for Lua
 		formatting.stylua,
 		-- ESLint for diagnostics
-		diagnostics.eslint_d.with({
+		eslint_d.with({
 			filetypes = {
 				"javascript",
 				"javascriptreact",

@@ -18,8 +18,12 @@ nvimtree.setup({
 		icons = {
 			glyphs = {
 				folder = {
-					arrow_closed = "", -- arrow when folder is closed
-					arrow_open = "", -- arrow when folder is open
+					arrow_closed = "▸",
+					arrow_open = "▾",
+					--arrow_closed = "→",
+					--arrow_open = "↓",
+					--arrow_closed = "▶",
+					--arrow_open = "▼",
 				},
 			},
 			show = {
@@ -51,6 +55,7 @@ nvimtree.setup({
 		},
 	},
 	view = {
+		width = 25, -- Set the sidebar width to 25 characters
 		preserve_window_proportions = true,
 	},
 	update_cwd = true,

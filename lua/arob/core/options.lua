@@ -50,7 +50,5 @@ opt.updatetime = 50
 
 opt.colorcolumn = "80"
 
-vim.g.mapleader = " "
-
 -- disable the default mode info from status line
 opt.showmode = false
