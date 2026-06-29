@@ -30,6 +30,8 @@ mason_lspconfig.setup({
 		"emmet_ls",
 		"rust_analyzer",
 		"gopls", -- go language server
+		"terraformls", -- terraform / opentofu language server
+		"tflint", -- terraform / opentofu linter (runs as a language server)
 	},
 	-- auto-install configured servers (with lspconfig)
 	automatic_installation = true, -- not the same as ensure_installed

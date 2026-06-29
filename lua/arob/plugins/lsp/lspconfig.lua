@@ -194,6 +194,39 @@ lspconfig["gopls"].setup({
 	},
 })
 
+-- OpenTofu files aren't detected by default; treat them like terraform (.tf opens as "terraform")
+vim.filetype.add({
+	extension = { tofu = "terraform" },
+	pattern = { [".*%.tofu%.json"] = "json" },
+})
+
+-- Configure terraform / opentofu server (handles .tf and .tofu; formats via `terraform fmt`)
+lspconfig["terraformls"].setup({
+	capabilities = capabilities,
+	-- .tf resolves to filetype "tf" on recent Neovim, so list it explicitly
+	filetypes = { "terraform", "tf", "terraform-vars" },
+	on_attach = function(client, bufnr)
+		on_attach(client, bufnr)
+
+		local tf_augroup = vim.api.nvim_create_augroup("TerraformFormatting", { clear = false })
+		vim.api.nvim_clear_autocmds({ group = tf_augroup, buffer = bufnr })
+		vim.api.nvim_create_autocmd("BufWritePre", {
+			group = tf_augroup,
+			buffer = bufnr,
+			callback = function()
+				vim.lsp.buf.format({ bufnr = bufnr, async = false })
+			end,
+		})
+	end,
+})
+
+-- Configure tflint language server (Terraform / OpenTofu linting, live diagnostics)
+lspconfig["tflint"].setup({
+	capabilities = capabilities,
+	on_attach = on_attach,
+	filetypes = { "terraform", "tf" },
+})
+
 -- Configure eslint (optional, integrated with null-ls)
 lspconfig["eslint"].setup({
 	capabilities = capabilities,
