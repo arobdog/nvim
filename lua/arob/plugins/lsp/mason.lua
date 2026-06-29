@@ -29,6 +29,7 @@ mason_lspconfig.setup({
 		"lua_ls",
 		"emmet_ls",
 		"rust_analyzer",
+		"gopls", -- go language server
 	},
 	-- auto-install configured servers (with lspconfig)
 	automatic_installation = true, -- not the same as ensure_installed
@@ -41,6 +42,7 @@ mason_null_ls.setup({
 		"black", -- python
 		"stylua", -- lua formatter
 		"eslint_d", -- ts/js linter
+		"golangci-lint", -- go linter
 	},
 	-- auto-install configured formatters & linters (with null-ls)
 	automatic_installation = true,

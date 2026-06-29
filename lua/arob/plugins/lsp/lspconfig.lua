@@ -130,6 +130,70 @@ lspconfig["rust_analyzer"].setup({
 	on_attach = on_attach,
 })
 
+-- Run gopls "organize imports" code action (goimports-style) on the buffer
+local function go_organize_imports(client, bufnr, timeout_ms)
+	local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+	params.context = { only = { "source.organizeImports" } }
+	local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, timeout_ms)
+	for _, res in pairs(result or {}) do
+		for _, action in pairs(res.result or {}) do
+			if action.edit then
+				vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+			end
+		end
+	end
+end
+
+-- Configure go server (gopls handles gofumpt formatting + goimports)
+lspconfig["gopls"].setup({
+	capabilities = capabilities,
+	on_attach = function(client, bufnr)
+		on_attach(client, bufnr)
+
+		-- Inlay hints on by default for Go, with a toggle
+		if vim.lsp.inlay_hint then
+			vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+			keymap.set("n", "<leader>ih", function()
+				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
+			end, { noremap = true, silent = true, buffer = bufnr, desc = "Toggle inlay hints" })
+		end
+
+		-- Format (gofumpt) + organize imports on save
+		local go_augroup = vim.api.nvim_create_augroup("GoFormatting", { clear = false })
+		vim.api.nvim_clear_autocmds({ group = go_augroup, buffer = bufnr })
+		vim.api.nvim_create_autocmd("BufWritePre", {
+			group = go_augroup,
+			buffer = bufnr,
+			callback = function()
+				go_organize_imports(client, bufnr, 1000)
+				vim.lsp.buf.format({ bufnr = bufnr, async = false })
+			end,
+		})
+	end,
+	settings = {
+		gopls = {
+			gofumpt = true, -- stricter gofmt
+			staticcheck = true, -- extra static analysis in-editor
+			usePlaceholders = true, -- fill function signatures on completion
+			completeUnimported = true, -- autocomplete symbols from un-imported packages
+			analyses = {
+				unusedparams = true,
+				unusedwrite = true,
+				nilness = true,
+				shadow = true,
+			},
+			hints = {
+				assignVariableTypes = true,
+				compositeLiteralFields = true,
+				constantValues = true,
+				functionTypeParameters = true,
+				parameterNames = true,
+				rangeVariableTypes = true,
+			},
+		},
+	},
+})
+
 -- Configure eslint (optional, integrated with null-ls)
 lspconfig["eslint"].setup({
 	capabilities = capabilities,

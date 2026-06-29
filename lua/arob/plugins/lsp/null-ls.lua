@@ -6,6 +6,7 @@ end
 
 -- For conciseness
 local formatting = null_ls.builtins.formatting
+local diagnostics = null_ls.builtins.diagnostics
 local eslint_d_ok, eslint_d = pcall(require, "none-ls.diagnostics.eslint_d")
 
 -- To setup format on save
@@ -64,6 +65,8 @@ null_ls.setup({
 		formatting.black,
 		-- Stylua for Lua
 		formatting.stylua,
+		-- golangci-lint for Go diagnostics
+		diagnostics.golangci_lint,
 		-- ESLint for diagnostics
 		eslint_d_ok and eslint_d.with({
 			filetypes = {
@@ -87,7 +90,7 @@ null_ls.setup({
 		}) or nil,
 	},
 	on_attach = function(client, bufnr)
-		if client.supports_method("textDocument/formatting") then
+		if client:supports_method("textDocument/formatting") then
 			vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
 		end
 	end,
