@@ -94,15 +94,17 @@ local plugins = {
 		end,
 	},
 
-	-- Treesitter configuration
+	-- Treesitter configuration (main branch — required for Neovim 0.11+/0.12;
+	-- the old master branch is archived and crashes on 0.12)
 	{
 		"nvim-treesitter/nvim-treesitter",
-		version = false, -- Optional: keep this if you want the latest commit
+		branch = "main",
+		lazy = false,
+		build = ":TSUpdate",
 		config = function()
 			require("arob.plugins.treesitter")
 		end,
 	},
-	{ "nvim-treesitter/playground" },
 
 	-- Autocompletion
 	{
@@ -165,7 +167,12 @@ local plugins = {
 			require("arob.plugins.autopairs")
 		end,
 	},
-	{ "windwp/nvim-ts-autotag" },
+	{
+		"windwp/nvim-ts-autotag",
+		config = function()
+			require("nvim-ts-autotag").setup()
+		end,
+	},
 
 	-- Git signs plugin
 	{
