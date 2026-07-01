@@ -1,10 +1,9 @@
--- Import lspconfig plugin safely
-local lspconfig_status, lspconfig = pcall(require, "lspconfig")
-if not lspconfig_status then
-	return
-end
+-- Native LSP configuration (Neovim 0.11+ `vim.lsp.config` / `vim.lsp.enable` API).
+-- nvim-lspconfig is kept installed only for its bundled server definitions under
+-- `lsp/*.lua` (cmd, root markers, default filetypes), which Neovim discovers on the
+-- runtimepath. We no longer use its deprecated `require("lspconfig")` framework.
 
--- Import cmp-nvim-lsp plugin safely
+-- Import cmp-nvim-lsp plugin safely (for completion capabilities)
 local cmp_nvim_lsp_status, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
 if not cmp_nvim_lsp_status then
 	return
@@ -12,8 +11,8 @@ end
 
 local keymap = vim.keymap -- for conciseness
 
--- Enable keybinds only for when lsp server available
-local on_attach = function(client, bufnr)
+-- Buffer-local keybinds, applied whenever a server attaches.
+local function on_attach(client, bufnr)
 	-- Keybind options
 	local opts = { noremap = true, silent = true, buffer = bufnr }
 
@@ -42,20 +41,36 @@ end
 -- Used to enable autocompletion
 local capabilities = cmp_nvim_lsp.default_capabilities()
 
+-- terraform-ls warns ("Ignoring workspace folder (unsupported or invalid URI)...
+-- This is most likely bug, please report it.") when it's told about a non-file URI
+-- workspace folder — e.g. the diffview:// buffers diffview.nvim opens for .tf files.
+-- It already ignores the bad folder, so this is harmless noise; drop just that message.
+local function suppress_workspace_folder_warning(handler)
+	return function(err, result, ctx, config)
+		if result and type(result.message) == "string" and result.message:find("Ignoring workspace folder", 1, true) then
+			return
+		end
+		if handler then
+			return handler(err, result, ctx, config)
+		end
+	end
+end
+
 -- Change the Diagnostic symbols in the sign column
-local signs = { Error = " ", Warn = " ", Hint = "ﴞ ", Info = " " }
+local signs = { Error = " ", Warn = " ", Hint = "ﴞ ", Info = " " }
 for type, icon in pairs(signs) do
 	local hl = "DiagnosticSign" .. type
 	vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 end
 
--- Configure html server
-lspconfig["html"].setup({
+-- Defaults shared by every server. Per-server configs below merge on top of this
+-- (and on top of nvim-lspconfig's bundled definitions).
+vim.lsp.config("*", {
 	capabilities = capabilities,
 	on_attach = on_attach,
 })
 
--- Configure typescript server with typescript-tools.nvim
+-- TypeScript via typescript-tools.nvim (not an nvim-lspconfig server)
 require("typescript-tools").setup({
 	capabilities = capabilities,
 	on_attach = on_attach,
@@ -67,16 +82,8 @@ require("typescript-tools").setup({
 	},
 })
 
--- Configure css server
-lspconfig["cssls"].setup({
-	capabilities = capabilities,
-	on_attach = on_attach,
-})
-
--- Configure tailwindcss server
-lspconfig["tailwindcss"].setup({
-	capabilities = capabilities,
-	on_attach = on_attach,
+-- tailwindcss: narrow the filetypes and add custom class regexes
+vim.lsp.config("tailwindcss", {
 	filetypes = {
 		"html",
 		"css",
@@ -100,17 +107,13 @@ lspconfig["tailwindcss"].setup({
 	},
 })
 
--- Configure emmet language server
-lspconfig["emmet_ls"].setup({
-	capabilities = capabilities,
-	on_attach = on_attach,
+-- emmet language server: broaden to the markup/style filetypes we use
+vim.lsp.config("emmet_ls", {
 	filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less" },
 })
 
--- Configure lua server
-lspconfig["lua_ls"].setup({
-	capabilities = capabilities,
-	on_attach = on_attach,
+-- lua language server: teach it about the `vim` global and the runtime/config libs
+vim.lsp.config("lua_ls", {
 	settings = {
 		Lua = {
 			diagnostics = { globals = { "vim" } },
@@ -122,12 +125,6 @@ lspconfig["lua_ls"].setup({
 			},
 		},
 	},
-})
-
--- Configure rust server
-lspconfig["rust_analyzer"].setup({
-	capabilities = capabilities,
-	on_attach = on_attach,
 })
 
 -- Run gopls "organize imports" code action (goimports-style) on the buffer
@@ -144,9 +141,8 @@ local function go_organize_imports(client, bufnr, timeout_ms)
 	end
 end
 
--- Configure go server (gopls handles gofumpt formatting + goimports)
-lspconfig["gopls"].setup({
-	capabilities = capabilities,
+-- go server (gopls handles gofumpt formatting + goimports)
+vim.lsp.config("gopls", {
 	on_attach = function(client, bufnr)
 		on_attach(client, bufnr)
 
@@ -200,11 +196,14 @@ vim.filetype.add({
 	pattern = { [".*%.tofu%.json"] = "json" },
 })
 
--- Configure terraform / opentofu server (handles .tf and .tofu; formats via `terraform fmt`)
-lspconfig["terraformls"].setup({
-	capabilities = capabilities,
+-- terraform / opentofu server (handles .tf and .tofu; formats via `terraform fmt`)
+vim.lsp.config("terraformls", {
 	-- .tf resolves to filetype "tf" on recent Neovim, so list it explicitly
 	filetypes = { "terraform", "tf", "terraform-vars" },
+	handlers = {
+		["window/showMessage"] = suppress_workspace_folder_warning(vim.lsp.handlers["window/showMessage"]),
+		["window/logMessage"] = suppress_workspace_folder_warning(vim.lsp.handlers["window/logMessage"]),
+	},
 	on_attach = function(client, bufnr)
 		on_attach(client, bufnr)
 
@@ -220,16 +219,13 @@ lspconfig["terraformls"].setup({
 	end,
 })
 
--- Configure tflint language server (Terraform / OpenTofu linting, live diagnostics)
-lspconfig["tflint"].setup({
-	capabilities = capabilities,
-	on_attach = on_attach,
+-- tflint language server (Terraform / OpenTofu linting, live diagnostics)
+vim.lsp.config("tflint", {
 	filetypes = { "terraform", "tf" },
 })
 
--- Configure eslint (optional, integrated with null-ls)
-lspconfig["eslint"].setup({
-	capabilities = capabilities,
+-- eslint (optional, integrated with null-ls); fix all on save
+vim.lsp.config("eslint", {
 	on_attach = function(client, bufnr)
 		vim.api.nvim_create_autocmd("BufWritePre", {
 			buffer = bufnr,
@@ -240,4 +236,18 @@ lspconfig["eslint"].setup({
 	settings = {
 		packageManager = "npm", -- Changed to npm for broader compatibility
 	},
+})
+
+-- Enable the nvim-lspconfig-backed servers (typescript-tools enables itself above).
+vim.lsp.enable({
+	"html",
+	"cssls",
+	"tailwindcss",
+	"emmet_ls",
+	"lua_ls",
+	"rust_analyzer",
+	"gopls",
+	"terraformls",
+	"tflint",
+	"eslint",
 })
