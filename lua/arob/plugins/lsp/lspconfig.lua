@@ -63,6 +63,27 @@ for type, icon in pairs(signs) do
 	vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 end
 
+-- Don't start/attach any LSP client for buffers backed by a non-file URI, e.g. the
+-- diffview:// buffers diffview.nvim opens for diffs. Neovim's native vim.lsp.enable
+-- matches servers by filetype only (see lsp_enable_callback) and doesn't check the
+-- buffer's URI scheme, so without this gopls/terraformls attach to those virtual
+-- buffers and error on the URI (gopls: "DocumentURI scheme is not 'file'"). Every
+-- attach — new or reused — funnels through vim.lsp.start, so wrapping it once here
+-- covers all servers. Guarded so a re-require doesn't double-wrap.
+if not vim.g.__file_only_lsp_start then
+	vim.g.__file_only_lsp_start = true
+	local orig_start = vim.lsp.start
+	vim.lsp.start = function(config, opts)
+		local bufnr = (opts and opts.bufnr) or vim.api.nvim_get_current_buf()
+		local name = vim.api.nvim_buf_get_name(bufnr)
+		local scheme = name:match("^(%w[%w+.-]*)://")
+		if scheme and scheme ~= "file" then
+			return
+		end
+		return orig_start(config, opts)
+	end
+end
+
 -- Defaults shared by every server. Per-server configs below merge on top of this
 -- (and on top of nvim-lspconfig's bundled definitions).
 vim.lsp.config("*", {
