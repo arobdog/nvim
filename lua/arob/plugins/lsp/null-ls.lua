@@ -89,6 +89,15 @@ null_ls.setup({
 			end,
 		}) or nil,
 	},
+	-- Don't attach to buffers backed by a non-file URI (e.g. diffview.nvim's
+	-- diffview:// diff buffers). Without this, none-ls tries to start on them, the
+	-- vim.lsp.start guard in lspconfig.lua blocks it, and none-ls logs a spurious
+	-- "failed to start null-ls client" warning.
+	should_attach = function(bufnr)
+		local name = vim.api.nvim_buf_get_name(bufnr)
+		local scheme = name:match("^(%w[%w+.-]*)://")
+		return not (scheme and scheme ~= "file")
+	end,
 	on_attach = function(client, bufnr)
 		if client:supports_method("textDocument/formatting") then
 			vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
